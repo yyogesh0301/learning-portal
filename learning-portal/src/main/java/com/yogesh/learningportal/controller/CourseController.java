@@ -1,64 +1,89 @@
 package com.yogesh.learningportal.controller;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.yogesh.learningportal.dto.CourseCreateDto;
-import com.yogesh.learningportal.dto.CourseDto;
+import com.yogesh.learningportal.dto.CourseRequestDto;
+import com.yogesh.learningportal.dto.CourseResponseDto;
+import com.yogesh.learningportal.dto.EnrollmentRequestDto;
 import com.yogesh.learningportal.entity.Category;
 import com.yogesh.learningportal.entity.Course;
+import com.yogesh.learningportal.entity.User;
+import com.yogesh.learningportal.mapper.CourseMapper;
 import com.yogesh.learningportal.repository.CategoryRepository;
 import com.yogesh.learningportal.repository.CourseRepository;
+import com.yogesh.learningportal.repository.UserRepository;
 import com.yogesh.learningportal.service.CourseService;
+
+
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/courses")
 public class CourseController {
 
-    @Autowired
-    private CourseService courseService;
-    
-    @Autowired
-    private CategoryRepository categoryRepository;
+	@Autowired
+	private CourseService courseService;
 
-    @GetMapping
-    public List<Course> getAllCourses() {
-        return courseService.getAllCourses();
-    }
+	@Autowired
+	private CategoryRepository categoryRepository;
+	@Autowired
+	private CourseRepository courseRepository;
+	@Autowired
+	private UserRepository userRepository;
 
-    @GetMapping("/{id}")
-    public Optional<Course> getCourseById(@PathVariable Long id) {
-        return courseService.getCourseById(id);
-    }
-    
-    @PostMapping
-    public Course addCourse(@RequestBody CourseCreateDto courseCreateDto) {
-    	String categoryName = courseCreateDto.getCategoryName();
-    	Category category = categoryRepository.findByName(categoryName);
-    	
-    	if (category == null) {
-    		Category newCategory = new Category();
-    		newCategory.setName(categoryName);
-    		category = categoryRepository.save(newCategory);
-    	}
-    	
-    	System.out.println(category.toString());
-    	
-    	Course course = new Course();
-    	course.setName(courseCreateDto.getName());
-    	course.setAuthor(courseCreateDto.getAuthor());
-    	course.setDesc(courseCreateDto.getDesc());
-    	course.setCategory(category);
-    	
-    	System.out.println(course.toString());
-    	return courseService.addCourse(course);
-    }
-    
-    @DeleteMapping("/{id}")
-    public void deleteCourse(@PathVariable Long id) {
-        courseService.deleteCourse(id);
-    }
-    
+	private static final Logger logger = LoggerFactory.getLogger(CourseController.class);
+	
+	@Autowired
+	private CourseMapper courseMapper;
+
+	@GetMapping
+	public List<CourseResponseDto> getAllCourses() {
+		List<Course> courses = courseService.getAllCourses();
+		return courses.stream().map(courseMapper::convertToResponseDto).collect(Collectors.toList());
+	}
+
+	@GetMapping("/{id}")
+	public CourseResponseDto getCourseById(@PathVariable Long id) {
+		Optional<Course> courseOptional = courseService.getCourseById(id);
+		return courseOptional.map(courseMapper::convertToResponseDto).orElse(null);
+	}
+
+	@PostMapping
+	public CourseResponseDto addCourse(@RequestBody CourseRequestDto courseCreateDto) {
+		String categoryName = courseCreateDto.getCategoryName();
+		Category category = categoryRepository.findByName(categoryName);
+
+		// If category doesn't exist, create a new one
+		if (category == null) {
+			category = new Category();
+			category.setName(categoryName);
+			category = categoryRepository.save(category);
+		}
+
+		String authorName = courseCreateDto.getAuthorName();
+		User author = userRepository.findByName(authorName);
+
+		// Check if author exists
+		if (author == null) {
+			logger.info("Author Not Found");
+			return null;
+		}
+
+		Course course = courseMapper.convertToEntity(courseCreateDto);
+		course.setCategory(category);
+		course.setAuthor(author);
+		courseService.addCourse(course);
+		CourseResponseDto courseResponseDto = courseMapper.convertToResponseDto(course);
+		logger.info("Course Added Succesfully");
+		return courseResponseDto;
+	}
+	
+	
+
 }

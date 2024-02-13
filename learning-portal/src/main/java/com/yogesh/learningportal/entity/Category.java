@@ -13,15 +13,15 @@ import lombok.Data;
 @Data
 @Entity
 @EntityListeners(AuditingEntityListener.class)
-@Table(name="categories")
+@Table(name = "categories")
 public class Category {
-	
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name="category_id")
+	@Column(name = "category_id")
 	private Long id;
-	
-	@Column(name="category_name",unique = true)
+
+	@Column(name = "category_name", unique = true)
 	private String name;
-	
+
 }

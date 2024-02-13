@@ -11,6 +11,5 @@ import com.yogesh.learningportal.entity.Course;
 
 @Repository
 public interface CourseRepository extends JpaRepository<Course,Long>{
-	List<Course> findByCategory(Category Category);
-	Course findByAuthor(String author);
+	List<Course> findByCategory(Category Category);	
 }
