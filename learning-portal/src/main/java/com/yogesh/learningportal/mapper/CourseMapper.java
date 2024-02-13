@@ -1,24 +1,4 @@
-//package com.yogesh.learningportal.mapper;
-//
-//import com.yogesh.learningportal.dto.CourseCreateDto;
-//import com.yogesh.learningportal.entity.Course;
-//import org.mapstruct.Mapper;
-//import org.mapstruct.Mapping;
-//import org.mapstruct.factory.Mappers;
-//
-//@Mapper
-//public interface CourseMapper {
-//
-//    CourseMapper INSTANCE = Mappers.getMapper(CourseMapper.class);
-//
-//    @Mapping(source = "author.name", target = "authorName")
-//    @Mapping(source = "category.name", target = "categoryName")
-//    CourseCreateDto courseToDto(Course course);
-//
-//    @Mapping(source = "authorName", target = "author.name")
-//    @Mapping(source = "categoryName", target = "category.name")
-//    Course dtoToCourse(CourseCreateDto courseDto);
-//}
+
 package com.yogesh.learningportal.mapper;
 
 import org.modelmapper.ModelMapper;

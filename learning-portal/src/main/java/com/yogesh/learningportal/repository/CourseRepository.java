@@ -10,6 +10,6 @@ import com.yogesh.learningportal.entity.Category;
 import com.yogesh.learningportal.entity.Course;
 
 @Repository
-public interface CourseRepository extends JpaRepository<Course,Long>{
-	List<Course> findByCategory(Category Category);	
+public interface CourseRepository extends JpaRepository<Course, Long> {
+	List<Course> findByCategory(Category Category);
 }

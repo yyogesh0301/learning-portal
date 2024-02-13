@@ -22,4 +22,5 @@ public class UserMapper {
 	public User convertToEntity(UserResponseDto dto) {
 		return modelMapper.map(dto, User.class);
 	}
+	
 }

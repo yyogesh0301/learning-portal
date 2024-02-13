@@ -33,7 +33,10 @@ public class UserService {
 	public User addUser(User user) {
 		return userRepository.save(user);
 	}
-
+    
+	public List<User>getAllAuthors(){
+		return userRepository.findAuthors();
+	}
 	public void deleteUser(Long userId) {
 		Optional<User> optionalUser = userRepository.findById(userId);
 		if (optionalUser.isPresent()) {
@@ -129,6 +132,6 @@ public class UserService {
 		}
 	}
 
-	
+
 
 }

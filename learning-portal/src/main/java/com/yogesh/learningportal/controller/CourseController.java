@@ -3,6 +3,7 @@ package com.yogesh.learningportal.controller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,6 +23,9 @@ import com.yogesh.learningportal.service.CourseService;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 @RestController
 @RequestMapping("/courses")
@@ -47,6 +51,7 @@ public class CourseController {
 		List<Course> courses = courseService.getAllCourses();
 		return courses.stream().map(courseMapper::convertToResponseDto).collect(Collectors.toList());
 	}
+	
 
 	@GetMapping("/{id}")
 	public CourseResponseDto getCourseById(@PathVariable Long id) {
@@ -55,7 +60,7 @@ public class CourseController {
 	}
 
 	@PostMapping
-	public CourseResponseDto addCourse(@RequestBody CourseRequestDto courseCreateDto) {
+	public ResponseEntity<CourseResponseDto> addCourse(@RequestBody CourseRequestDto courseCreateDto) {
 		String categoryName = courseCreateDto.getCategoryName();
 		Category category = categoryRepository.findByName(categoryName);
 
@@ -68,11 +73,12 @@ public class CourseController {
 
 		String authorName = courseCreateDto.getAuthorName();
 		User author = userRepository.findByName(authorName);
+		
 
 		// Check if author exists
-		if (author == null) {
+		if (author == null || author.getRole() != User.Roles.AUTHOR) {
 			logger.info("Author Not Found");
-			return null;
+		     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
 		}
 
 		Course course = courseMapper.convertToEntity(courseCreateDto);
@@ -81,9 +87,8 @@ public class CourseController {
 		courseService.addCourse(course);
 		CourseResponseDto courseResponseDto = courseMapper.convertToResponseDto(course);
 		logger.info("Course Added Succesfully");
-		return courseResponseDto;
+		return ResponseEntity.ok(courseResponseDto);
 	}
-	
 	
 
 }

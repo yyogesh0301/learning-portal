@@ -13,8 +13,10 @@ import com.yogesh.learningportal.entity.User;
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
 
-	User findByEmail(String email);
-
+	public User findByEmail(String email);
 	public User findByName(String name);
+	
+	@Query(value = "SELECT * FROM users u WHERE u.user_role = 'AUTHOR'", nativeQuery = true)
+    public List<User> findAuthors();
 
 }

@@ -31,14 +31,12 @@ public class UserController {
 		this.userService = userService;
 		this.userMapper = userMapper;
 		this.courseService = courseService;
-
 	}
 
-	@GetMapping("/login")
-	public String login() {
-		return "login";
+	@GetMapping("/authors")
+	public List<User> getAuthors(){
+		return userService.getAllAuthors();
 	}
-
 	@GetMapping
 	public ResponseEntity<List<UserResponseDto>> getAllUsers() {
 		List<User> users = userService.getAllUsers();
@@ -144,5 +142,5 @@ public class UserController {
 	                             .body("An error occurred: " + e.getMessage());
 	    }
 	}
-
+	
 }
