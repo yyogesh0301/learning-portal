@@ -17,6 +17,7 @@ import com.yogesh.learningportal.mapper.CourseMapper;
 import com.yogesh.learningportal.repository.CategoryRepository;
 import com.yogesh.learningportal.repository.CourseRepository;
 import com.yogesh.learningportal.repository.UserRepository;
+import com.yogesh.learningportal.service.CategoryService;
 import com.yogesh.learningportal.service.CourseService;
 
 
@@ -31,21 +32,23 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RequestMapping("/courses")
 public class CourseController {
 
-	@Autowired
 	private CourseService courseService;
-
-	@Autowired
 	private CategoryRepository categoryRepository;
-	@Autowired
 	private CourseRepository courseRepository;
-	@Autowired
 	private UserRepository userRepository;
-
-	private static final Logger logger = LoggerFactory.getLogger(CourseController.class);
-	
-	@Autowired
 	private CourseMapper courseMapper;
 
+	public CourseController(CourseService courseService, CategoryRepository categoryRepository, CourseRepository courseRepository,
+			UserRepository userRepository,CourseMapper courseMapper) {
+		this.courseService=courseService;
+		this.categoryRepository = categoryRepository;
+		this.courseRepository=courseRepository;
+		this.userRepository=userRepository;
+		this.courseMapper=courseMapper;
+	}
+	
+	private static final Logger logger = LoggerFactory.getLogger(CourseController.class);
+	
 	@GetMapping
 	public List<CourseResponseDto> getAllCourses() {
 		List<Course> courses = courseService.getAllCourses();

@@ -25,13 +25,13 @@ public class UserController {
 	private final UserService userService;
 	private final CourseService courseService;
 	private final UserMapper userMapper;
-	@Autowired
-	private UserRepository userRepository;
+	private final UserRepository userRepository;
 
-	public UserController(UserService userService, UserMapper userMapper, CourseService courseService) {
+	public UserController(UserService userService, UserMapper userMapper, CourseService courseService,UserRepository userRepository) {
 		this.userService = userService;
 		this.userMapper = userMapper;
 		this.courseService = courseService;
+		this.userRepository=userRepository;
 	}
 
 	@GetMapping("/authors")
@@ -51,7 +51,7 @@ public class UserController {
 
 		User user = userService.addUser(userMapper.convertRequestToEntity(userDto));
 		UserResponseDto userResponseDto = userMapper.convertRequestToResponseDto(userDto);
-
+        userResponseDto.setId(user.getId());
 		return ResponseEntity.status(HttpStatus.CREATED).body(userResponseDto);
 	}
 

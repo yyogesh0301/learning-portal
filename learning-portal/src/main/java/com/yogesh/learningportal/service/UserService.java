@@ -1,7 +1,12 @@
 package com.yogesh.learningportal.service;
 
+import java.nio.charset.StandardCharsets;
+import java.security.SecureRandom;
 import java.util.List;
 import java.util.Optional;
+
+import javax.crypto.SecretKeyFactory;
+
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -10,6 +15,11 @@ import com.yogesh.learningportal.entity.Course;
 import com.yogesh.learningportal.entity.User;
 import com.yogesh.learningportal.repository.CourseRepository;
 import com.yogesh.learningportal.repository.UserRepository;
+
+import com.google.common.hash.HashCode;
+import com.google.common.hash.HashFunction;
+import com.google.common.hash.Hashing;
+import com.google.common.primitives.Bytes;
 
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
@@ -22,7 +32,6 @@ public class UserService {
 
 	private final UserRepository userRepository;
 	private final CourseRepository courseRepository;
-	
 
 	public List<User> getAllUsers() {
 		return userRepository.findAll();
@@ -33,24 +42,39 @@ public class UserService {
 	}
 
 	public User addUser(User user) {
+		byte[] salt = generateSalt();
+
+		String password = user.getPassword();
+
+		HashCode hash = hashPassword(password, salt);
+
+		String hashedPassword = hash.toString();
+		user.setPassword(hashedPassword);
+
 		return userRepository.save(user);
 	}
-    
-	public List<User>getAllAuthors(){
+
+	public List<User> getAllAuthors() {
 		return userRepository.findAuthors();
 	}
+
 	public void deleteUser(Long userId) {
 		Optional<User> optionalUser = userRepository.findById(userId);
 		if (optionalUser.isPresent()) {
 			User user = optionalUser.get();
 			user.getEnrolledCourses().clear();
-			user.getFavoriteCourses().clear(); 
+			user.getFavoriteCourses().clear();
+
+			List<Course> courses = courseRepository.getCoursesByAuthor(userId);
+			// Delete fetched courses
+			courseRepository.deleteAll(courses);
 			userRepository.delete(user);
 			logger.info("User with ID {} has successfully Removed", userId);
 		} else {
 			throw new IllegalArgumentException("User with ID " + userId + " not found.");
 		}
 	}
+
 	public void enrollCourse(Long userId, Long courseId) {
 		Optional<User> optionalUser = userRepository.findById(userId);
 		Optional<Course> optionalCourse = courseRepository.findById(courseId);
@@ -109,6 +133,7 @@ public class UserService {
 
 			// Remove the course from the enrolled courses list
 			user.getEnrolledCourses().removeIf(course -> course.getId() == courseId);
+			user.getFavoriteCourses().removeIf(course -> course.getId() == courseId);
 
 			// Save the updated user entity
 			userRepository.save(user);
@@ -134,6 +159,17 @@ public class UserService {
 		}
 	}
 
+	private byte[] generateSalt() {
+		SecureRandom random = new SecureRandom();
+		byte[] salt = new byte[16];
+		random.nextBytes(salt);
+		return salt;
+	}
 
-
+	// Hash the password using SHA-256
+	private HashCode hashPassword(String password, byte[] salt) {
+		HashFunction hashFunction = Hashing.sha256();
+		byte[] concatenatedBytes = Bytes.concat(password.getBytes(StandardCharsets.UTF_8), salt);
+		return hashFunction.hashBytes(concatenatedBytes);
+	}
 }
