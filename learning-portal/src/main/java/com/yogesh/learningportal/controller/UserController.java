@@ -4,6 +4,7 @@ import com.yogesh.learningportal.mapper.UserMapper;
 import com.yogesh.learningportal.repository.UserRepository;
 import com.yogesh.learningportal.dto.EnrollmentRequestDto;
 import com.yogesh.learningportal.dto.FavouriteRequestDto;
+import com.yogesh.learningportal.dto.UserRequestDto;
 import com.yogesh.learningportal.dto.UserResponseDto;
 import com.yogesh.learningportal.entity.Course;
 import com.yogesh.learningportal.entity.User;
@@ -34,14 +35,24 @@ public class UserController {
 	}
 
 	@GetMapping("/authors")
-	public List<User> getAuthors(){
+	public List<User> getAuthors() {
 		return userService.getAllAuthors();
 	}
+
 	@GetMapping
 	public ResponseEntity<List<UserResponseDto>> getAllUsers() {
 		List<User> users = userService.getAllUsers();
 		List<UserResponseDto> userDtos = users.stream().map(userMapper::convertToDto).collect(Collectors.toList());
 		return ResponseEntity.ok(userDtos);
+	}
+
+	@PostMapping
+	public ResponseEntity<UserResponseDto> registerUser(@RequestBody UserRequestDto userDto) {
+
+		User user = userService.addUser(userMapper.convertRequestToEntity(userDto));
+		UserResponseDto userResponseDto = userMapper.convertRequestToResponseDto(userDto);
+
+		return ResponseEntity.status(HttpStatus.CREATED).body(userResponseDto);
 	}
 
 	@GetMapping("/{id}")
@@ -53,20 +64,19 @@ public class UserController {
 
 	@DeleteMapping("/{id}")
 	public ResponseEntity<String> deleteUser(@PathVariable Long id) {
-	    Optional<User> optionalUser = userRepository.findById(id);
-	    if (optionalUser.isPresent()) {
-	        try {
-	            userService.deleteUser(id);
-	            return ResponseEntity.ok("User and related data deleted successfully.");
-	        } catch (Exception e) {
-	            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-	                                 .body("An error occurred: " + e.getMessage());
-	        }
-	    } else {
-	        return ResponseEntity.notFound().build();
-	    }
+		Optional<User> optionalUser = userRepository.findById(id);
+		if (optionalUser.isPresent()) {
+			try {
+				userService.deleteUser(id);
+				return ResponseEntity.ok("User and related data deleted successfully.");
+			} catch (Exception e) {
+				return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+						.body("An error occurred: " + e.getMessage());
+			}
+		} else {
+			return ResponseEntity.notFound().build();
+		}
 	}
-
 
 	@PostMapping("/courses/enroll")
 	public ResponseEntity<String> enrollCourse(@RequestBody EnrollmentRequestDto enrollmentrequest) {
@@ -99,13 +109,6 @@ public class UserController {
 		}
 	}
 
-	@PostMapping
-	public ResponseEntity<UserResponseDto> registerUser(@RequestBody UserResponseDto userDto) {
-		User user = userService.addUser(userMapper.convertToEntity(userDto));
-		UserResponseDto responseDto = userMapper.convertToDto(user);
-		return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
-	}
-
 	@PostMapping("/courses/favourite")
 	public ResponseEntity<String> addFavouriteCourse(@RequestBody FavouriteRequestDto favouriteRequest) {
 		long userId = favouriteRequest.getUserId();
@@ -117,30 +120,29 @@ public class UserController {
 			return ResponseEntity.badRequest().body(e.getMessage());
 		}
 	}
-	
+
 	@DeleteMapping("/courses/unenroll")
 	public ResponseEntity<String> removeEnrollment(@RequestBody EnrollmentRequestDto requestDto) {
 		Long userId = requestDto.getUserId();
-	    Long courseId = requestDto.getCourseId();
-	    try {
-	        userService.removeEnrollment(userId, courseId);
-	        return ResponseEntity.ok("Enrollment removed successfully.");
-	    } catch (Exception e) {
-	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-	                .body(" Not bale to unenroll An error occurred: " + e.getMessage());
-	    }
+		Long courseId = requestDto.getCourseId();
+		try {
+			userService.removeEnrollment(userId, courseId);
+			return ResponseEntity.ok("Enrollment removed successfully.");
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body(" Not bale to unenroll An error occurred: " + e.getMessage());
+		}
 	}
-	
+
 	@DeleteMapping("/courses/unfavorite")
 	public ResponseEntity<String> removeFavoriteCourse(@RequestBody EnrollmentRequestDto requestDto) {
-	    // Call the service method to remove the favorite course
-	    try {
-	        userService.removeFavoriteCourse(requestDto.getUserId(), requestDto.getCourseId());
-	        return ResponseEntity.ok("Favorite course removed successfully.");
-	    } catch (Exception e) {
-	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-	                             .body("An error occurred: " + e.getMessage());
-	    }
+		// Call the service method to remove the favorite course
+		try {
+			userService.removeFavoriteCourse(requestDto.getUserId(), requestDto.getCourseId());
+			return ResponseEntity.ok("Favorite course removed successfully.");
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + e.getMessage());
+		}
 	}
-	
+
 }
