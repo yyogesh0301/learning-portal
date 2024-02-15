@@ -12,7 +12,5 @@ import com.yogesh.learningportal.entity.Course;
 @Repository
 public interface CategoryRepository extends JpaRepository<Category, Long> {
 	public Category findByName(String name);
-
-	@Query(value = "SELECT c FROM Course c WHERE c.category.id = :categoryId")
-	List<Course> findByCategoryId(Long categoryId);
+	
 }

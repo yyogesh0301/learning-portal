@@ -5,10 +5,7 @@ import java.security.SecureRandom;
 import java.util.List;
 import java.util.Optional;
 
-import javax.crypto.SecretKeyFactory;
-
 import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.slf4j.LoggerFactory;
 import com.yogesh.learningportal.entity.Course;
@@ -21,7 +18,6 @@ import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
 import com.google.common.primitives.Bytes;
 
-import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
@@ -30,6 +26,7 @@ public class UserService {
 
 	private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
+	
 	private final UserRepository userRepository;
 	private final CourseRepository courseRepository;
 
@@ -53,9 +50,9 @@ public class UserService {
 
 		return userRepository.save(user);
 	}
-
-	public List<User> getAllAuthors() {
-		return userRepository.findAuthors();
+	
+	public User findByName(String name) {
+		return userRepository.findByName(name);
 	}
 
 	public void deleteUser(Long userId) {

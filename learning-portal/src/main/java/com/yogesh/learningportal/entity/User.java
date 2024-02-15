@@ -47,11 +47,11 @@ public class User {
 	@Enumerated(EnumType.STRING)
 	private Roles role;
 
-	@ManyToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+	@ManyToMany(fetch = FetchType.EAGER,cascade = CascadeType.ALL)
 	@JoinTable(name = "user_enrolled_courses", joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "user_id"), inverseJoinColumns = @JoinColumn(name = "course_id", referencedColumnName = "course_id"))
 	private List<Course> enrolledCourses;
 
-	@ManyToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.REMOVE, CascadeType.REFRESH, CascadeType.DETACH})
 	@JoinTable(name = "user_favorite_courses", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "course_id"))
 	private List<Course> favoriteCourses;
 	

@@ -1,6 +1,7 @@
 package com.yogesh.learningportal.controller;
 
 import com.yogesh.learningportal.mapper.UserMapper;
+import com.yogesh.learningportal.repository.CourseRepository;
 import com.yogesh.learningportal.repository.UserRepository;
 import com.yogesh.learningportal.dto.EnrollmentRequestDto;
 import com.yogesh.learningportal.dto.FavouriteRequestDto;
@@ -11,7 +12,6 @@ import com.yogesh.learningportal.entity.User;
 import com.yogesh.learningportal.service.CourseService;
 import com.yogesh.learningportal.service.UserService;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,18 +25,11 @@ public class UserController {
 	private final UserService userService;
 	private final CourseService courseService;
 	private final UserMapper userMapper;
-	private final UserRepository userRepository;
 
-	public UserController(UserService userService, UserMapper userMapper, CourseService courseService,UserRepository userRepository) {
+	public UserController(UserService userService, UserMapper userMapper, CourseService courseService) {
 		this.userService = userService;
 		this.userMapper = userMapper;
 		this.courseService = courseService;
-		this.userRepository=userRepository;
-	}
-
-	@GetMapping("/authors")
-	public List<User> getAuthors() {
-		return userService.getAllAuthors();
 	}
 
 	@GetMapping
@@ -45,6 +38,8 @@ public class UserController {
 		List<UserResponseDto> userDtos = users.stream().map(userMapper::convertToDto).collect(Collectors.toList());
 		return ResponseEntity.ok(userDtos);
 	}
+	
+
 
 	@PostMapping
 	public ResponseEntity<UserResponseDto> registerUser(@RequestBody UserRequestDto userDto) {
@@ -54,6 +49,7 @@ public class UserController {
         userResponseDto.setId(user.getId());
 		return ResponseEntity.status(HttpStatus.CREATED).body(userResponseDto);
 	}
+	
 
 	@GetMapping("/{id}")
 	public ResponseEntity<UserResponseDto> getUserById(@PathVariable Long id) {
@@ -63,15 +59,15 @@ public class UserController {
 	}
 
 	@DeleteMapping("/{id}")
-	public ResponseEntity<String> deleteUser(@PathVariable Long id) {
-		Optional<User> optionalUser = userRepository.findById(id);
+	public ResponseEntity<String> removeUser(@PathVariable Long id) {
+		Optional<User> optionalUser = userService.findUserById(id);
 		if (optionalUser.isPresent()) {
 			try {
 				userService.deleteUser(id);
 				return ResponseEntity.ok("User and related data deleted successfully.");
 			} catch (Exception e) {
 				return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-						.body("An error occurred: " + e.getMessage());
+						.body("User Not Found Error Deleting" + e.getMessage());
 			}
 		} else {
 			return ResponseEntity.notFound().build();

@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.yogesh.learningportal.dto.CourseRequestDto;
 import com.yogesh.learningportal.dto.CourseResponseDto;
-import com.yogesh.learningportal.dto.EnrollmentRequestDto;
+import com.yogesh.learningportal.dto.UserResponseDto;
 import com.yogesh.learningportal.entity.Category;
 import com.yogesh.learningportal.entity.Course;
 import com.yogesh.learningportal.entity.User;
@@ -19,31 +19,28 @@ import com.yogesh.learningportal.repository.CourseRepository;
 import com.yogesh.learningportal.repository.UserRepository;
 import com.yogesh.learningportal.service.CategoryService;
 import com.yogesh.learningportal.service.CourseService;
-
+import com.yogesh.learningportal.service.UserService;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 
 @RestController
 @RequestMapping("/courses")
 public class CourseController {
 
-	private CourseService courseService;
-	private CategoryRepository categoryRepository;
-	private CourseRepository courseRepository;
-	private UserRepository userRepository;
-	private CourseMapper courseMapper;
+	private final CourseService courseService;
+	private  final CategoryService categoryService;
+	private final UserService userService;
+	private final CourseMapper courseMapper;
 
-	public CourseController(CourseService courseService, CategoryRepository categoryRepository, CourseRepository courseRepository,
-			UserRepository userRepository,CourseMapper courseMapper) {
+	public CourseController(CourseService courseService, CategoryService categoryService,
+			UserService userService,CourseMapper courseMapper) {
 		this.courseService=courseService;
-		this.categoryRepository = categoryRepository;
-		this.courseRepository=courseRepository;
-		this.userRepository=userRepository;
+		this.categoryService = categoryService;
+		this.userService=userService;
 		this.courseMapper=courseMapper;
 	}
 	
@@ -62,22 +59,33 @@ public class CourseController {
 		return courseOptional.map(courseMapper::convertToResponseDto).orElse(null);
 	}
 
+	
+	@GetMapping("/author/{id}")
+    public ResponseEntity<List<CourseResponseDto>> getCoursesByAuthors(@PathVariable long id) {
+        List<CourseResponseDto> dtos = courseService.getCoursesByAuthor(id);
+        return ResponseEntity.ok(dtos);
+    }
+
+    @GetMapping("/category/{id}")
+    public ResponseEntity<List<CourseResponseDto>> getCoursesByCategory(@PathVariable long id) {
+        List<CourseResponseDto> dtos = courseService.getCoursesByCategory(id);
+        return ResponseEntity.ok(dtos);
+    }
+	
 	@PostMapping
 	public ResponseEntity<CourseResponseDto> addCourse(@RequestBody CourseRequestDto courseCreateDto) {
 		String categoryName = courseCreateDto.getCategoryName();
-		Category category = categoryRepository.findByName(categoryName);
-
+		Category category = categoryService.findCategoryByName(categoryName);
 		// If category doesn't exist, create a new one
 		if (category == null) {
 			category = new Category();
 			category.setName(categoryName);
-			category = categoryRepository.save(category);
+			category = categoryService.addNewCategory(category);
 		}
 
 		String authorName = courseCreateDto.getAuthorName();
-		User author = userRepository.findByName(authorName);
+		User author = userService.findByName(authorName);
 		
-
 		// Check if author exists
 		if (author == null || author.getRole() != User.Roles.AUTHOR) {
 			logger.info("Author Not Found");

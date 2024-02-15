@@ -23,5 +23,4 @@ public class Category {
 
 	@Column(name = "category_name", unique = true)
 	private String name;
-
 }

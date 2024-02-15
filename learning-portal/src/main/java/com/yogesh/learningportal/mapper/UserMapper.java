@@ -31,5 +31,10 @@ public class UserMapper {
 	public User convertRequestToEntity(UserRequestDto userRequestDto) {
         return modelMapper.map(userRequestDto, User.class);
     }
+
+	public void updateEntityFromRequestDto(UserRequestDto userDto, User user) {
+		// TODO Auto-generated method stub
+		
+	}
 	
 }

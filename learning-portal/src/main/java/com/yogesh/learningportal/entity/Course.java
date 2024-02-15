@@ -29,14 +29,14 @@ public class Course {
 	@Column(name = "course_name", unique = true)
 	private String name;
 
-	@ManyToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+	@ManyToOne(fetch = FetchType.EAGER,cascade = CascadeType.ALL)
 	@JoinColumn(name = "author_id")
 	private User author;
 
 	@Column(name = "course_desc")
 	private String desc;
 
-	@ManyToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+	@ManyToOne(fetch = FetchType.EAGER,cascade = CascadeType.ALL)
 	@JoinColumn(name = "category_id")
 	private Category category;
 }

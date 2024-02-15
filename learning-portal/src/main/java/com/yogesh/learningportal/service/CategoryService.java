@@ -47,12 +47,5 @@ public class CategoryService{
 		return categoryRepository.findById(id);
 	}
 	
-	public ResponseEntity<List<CourseResponseDto>> getCoursesByCategoryId(Long categoryId) {
-        List<Course> courses = categoryRepository.findByCategoryId(categoryId);
-        List<CourseResponseDto> courseDtos = courses.stream()
-                .map(courseMapper::convertToResponseDto)
-                .collect(Collectors.toList());
-
-        return ResponseEntity.ok(courseDtos);
-	}
+	
 }

@@ -15,4 +15,9 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
 	
 	@Query(nativeQuery = true,value="select * from courses where author_id=:author_id")
 	List<Course>getCoursesByAuthor(long author_id);
+	
+	@Query(nativeQuery = true,value = "SELECT * FROM courses  where category_id =:categoryId")
+	List<Course>findByCategoryId(long categoryId);
+	
+	// Join Table @Query(nativeQuery = true,value="SELECT courses.course_id, courses.course_name, courses.category_id, categories.category_name FROM courses LEFT OUTER JOIN categories ON courses.category_id = categories.category_id order by course_id")
 }
