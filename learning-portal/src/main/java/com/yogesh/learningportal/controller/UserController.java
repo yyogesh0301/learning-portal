@@ -1,55 +1,52 @@
 package com.yogesh.learningportal.controller;
 
-import com.yogesh.learningportal.mapper.UserMapper;
-import com.yogesh.learningportal.repository.CourseRepository;
-import com.yogesh.learningportal.repository.UserRepository;
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.yogesh.learningportal.dto.EnrollmentRequestDto;
 import com.yogesh.learningportal.dto.FavouriteRequestDto;
 import com.yogesh.learningportal.dto.UserRequestDto;
 import com.yogesh.learningportal.dto.UserResponseDto;
 import com.yogesh.learningportal.entity.Course;
 import com.yogesh.learningportal.entity.User;
+import com.yogesh.learningportal.mapper.UserMapper;
 import com.yogesh.learningportal.service.CourseService;
 import com.yogesh.learningportal.service.UserService;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import lombok.AllArgsConstructor;
 
+@AllArgsConstructor
 @RestController
-@RequestMapping("/users")
+@RequestMapping("api/users")
 public class UserController {
 	private final UserService userService;
 	private final CourseService courseService;
 	private final UserMapper userMapper;
 
-	public UserController(UserService userService, UserMapper userMapper, CourseService courseService) {
-		this.userService = userService;
-		this.userMapper = userMapper;
-		this.courseService = courseService;
-	}
-
 	@GetMapping
 	public ResponseEntity<List<UserResponseDto>> getAllUsers() {
 		List<User> users = userService.getAllUsers();
-		List<UserResponseDto> userDtos = users.stream().map(userMapper::convertToDto).collect(Collectors.toList());
+		List<UserResponseDto> userDtos = users.stream().map(userMapper::convertToDto).toList();
 		return ResponseEntity.ok(userDtos);
 	}
-	
-
 
 	@PostMapping
 	public ResponseEntity<UserResponseDto> registerUser(@RequestBody UserRequestDto userDto) {
 
 		User user = userService.addUser(userMapper.convertRequestToEntity(userDto));
-		UserResponseDto userResponseDto = userMapper.convertRequestToResponseDto(userDto);
-        userResponseDto.setId(user.getId());
+		UserResponseDto userResponseDto = userMapper.convertToDto(user);
 		return ResponseEntity.status(HttpStatus.CREATED).body(userResponseDto);
 	}
-	
 
 	@GetMapping("/{id}")
 	public ResponseEntity<UserResponseDto> getUserById(@PathVariable Long id) {
@@ -80,7 +77,6 @@ public class UserController {
 		long userId = enrollmentrequest.getUserId();
 		long courseId = enrollmentrequest.getCourseId();
 		try {
-			// Fetch the user and course from the database
 			Optional<User> userOptional = userService.findUserById(userId);
 			Optional<Course> courseOptional = courseService.getCourseById(courseId);
 
@@ -101,7 +97,7 @@ public class UserController {
 			userService.enrollCourse(userId, courseId);
 			return ResponseEntity.ok("Successfully enrolled in the course.");
 		} catch (Exception e) {
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + e.getMessage());
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Could not enroll " + e.getMessage());
 		}
 	}
 
@@ -126,19 +122,32 @@ public class UserController {
 			return ResponseEntity.ok("Enrollment removed successfully.");
 		} catch (Exception e) {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-					.body(" Not bale to unenroll An error occurred: " + e.getMessage());
+					.body(" Not able to unenroll An error occurred: " + e.getMessage());
 		}
 	}
 
 	@DeleteMapping("/courses/unfavorite")
 	public ResponseEntity<String> removeFavoriteCourse(@RequestBody EnrollmentRequestDto requestDto) {
-		// Call the service method to remove the favorite course
 		try {
 			userService.removeFavoriteCourse(requestDto.getUserId(), requestDto.getCourseId());
 			return ResponseEntity.ok("Favorite course removed successfully.");
 		} catch (Exception e) {
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + e.getMessage());
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unable to enroll ");
 		}
+	}
+
+	@PostMapping("/login")
+	public ResponseEntity<String> login(@RequestBody User user) {
+		String email = user.getEmail();
+		String password = user.getPassword();
+
+		Optional<User> userT = userService.login(email, password);
+		if (userT.isPresent()) {
+			return ResponseEntity.ok("Login succesfull");
+		} else {
+			return ResponseEntity.ok("Login failed");
+		}
+
 	}
 
 }

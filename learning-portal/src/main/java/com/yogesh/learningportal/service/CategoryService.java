@@ -2,34 +2,20 @@ package com.yogesh.learningportal.service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import com.yogesh.learningportal.dto.CourseResponseDto;
 import com.yogesh.learningportal.entity.Category;
-import com.yogesh.learningportal.entity.Course;
-import com.yogesh.learningportal.mapper.CourseMapper;
 import com.yogesh.learningportal.repository.CategoryRepository;
-import com.yogesh.learningportal.repository.CourseRepository;
-
-import lombok.AllArgsConstructor;
 
 @Service
-public class CategoryService{
-	
-	private final CategoryRepository categoryRepository;
-    private final CourseRepository courseRepository;
-    private final CourseMapper courseMapper;
+public class CategoryService {
 
-    @Autowired
-    public CategoryService(CategoryRepository categoryRepository, CourseRepository courseRepository, CourseMapper courseMapper) {
-        this.categoryRepository = categoryRepository;
-        this.courseRepository = courseRepository;
-        this.courseMapper = courseMapper;
-    }
+	private final CategoryRepository categoryRepository;
+
+	public CategoryService(CategoryRepository categoryRepository) {
+		this.categoryRepository = categoryRepository;
+	}
 
 	public List<Category> findAllCategories() {
 		return categoryRepository.findAll();
@@ -39,13 +25,12 @@ public class CategoryService{
 		return categoryRepository.findByName(name);
 	}
 
-	public Category addNewCategory(Category Category) {
-		return categoryRepository.save(Category);
+	public Category addNewCategory(Category category) {
+		return categoryRepository.save(category);
 	}
 
 	public Optional<Category> findCategoryById(Long id) {
 		return categoryRepository.findById(id);
 	}
-	
-	
+
 }

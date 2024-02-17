@@ -1,33 +1,28 @@
 package com.yogesh.learningportal.controller;
 
-import com.yogesh.learningportal.dto.CourseResponseDto;
-import com.yogesh.learningportal.entity.Category;
-import com.yogesh.learningportal.mapper.CourseMapper;
-import com.yogesh.learningportal.repository.CategoryRepository;
-import com.yogesh.learningportal.repository.CourseRepository;
-import com.yogesh.learningportal.service.CategoryService;
-import com.yogesh.learningportal.service.CourseService;
+import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
+import com.yogesh.learningportal.entity.Category;
+import com.yogesh.learningportal.service.CategoryService;
 
 @RestController
-@RequestMapping("/categories")
+@RequestMapping("api/categories")
 public class CategoryController {
 
 	private final CategoryService categoryService;
-	private final CourseMapper courseMapper;
-	private final CourseService courseService;
-	
 
-	public CategoryController(CategoryService categoryService,
-			CourseMapper courseMapper,CourseService courseService) {
+	public CategoryController(CategoryService categoryService) {
 		this.categoryService = categoryService;
-		this.courseMapper = courseMapper;
-		this.courseService=courseService;
 	}
 
 	@GetMapping

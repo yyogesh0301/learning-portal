@@ -1,7 +1,14 @@
 package com.yogesh.learningportal.entity;
 
+import java.time.LocalDateTime;
 import java.util.List;
+
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -47,12 +54,24 @@ public class User {
 	@Enumerated(EnumType.STRING)
 	private Roles role;
 
-	@ManyToMany(fetch = FetchType.EAGER,cascade = CascadeType.ALL)
+	@ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
 	@JoinTable(name = "user_enrolled_courses", joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "user_id"), inverseJoinColumns = @JoinColumn(name = "course_id", referencedColumnName = "course_id"))
 	private List<Course> enrolledCourses;
 
-    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.REMOVE, CascadeType.REFRESH, CascadeType.DETACH})
+	@ManyToMany(fetch = FetchType.EAGER, cascade = { CascadeType.PERSIST, CascadeType.REMOVE, CascadeType.REFRESH,
+			CascadeType.DETACH })
 	@JoinTable(name = "user_favorite_courses", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "course_id"))
 	private List<Course> favoriteCourses;
-	
+
+	@Column(name = "created_on")
+	@JsonFormat(pattern = "MM/dd/yyyy HH:mm")
+	@DateTimeFormat(pattern = "MM/dd/yyyy HH:mm")
+	@CreatedDate
+	private LocalDateTime createdDate;
+
+	@Column(name = "updated_on")
+	@JsonFormat(pattern = "MM/dd/yyyy HH:mm")
+	@DateTimeFormat(pattern = "MM/dd/yyyy HH:mm")
+	@LastModifiedDate
+	private LocalDateTime updatedDate;
 }

@@ -1,40 +1,20 @@
 package com.yogesh.learningportal.mapper;
 
-import org.modelmapper.ModelMapper;
-import org.springframework.stereotype.Component;
+import org.mapstruct.Mapper;
 
 import com.yogesh.learningportal.dto.UserRequestDto;
 import com.yogesh.learningportal.dto.UserResponseDto;
 import com.yogesh.learningportal.entity.User;
 
-@Component
-public class UserMapper {
+@Mapper(componentModel = "spring")
+public interface UserMapper {
 
-	private final ModelMapper modelMapper;
+	UserResponseDto convertToDto(User user);
 
-	public UserMapper(ModelMapper modelMapper) {
-		this.modelMapper = modelMapper;
-	}
+	User convertToEntity(UserResponseDto dto);
 
-	public UserResponseDto convertToDto(User user) {
-		return modelMapper.map(user, UserResponseDto.class);
-	}
+	UserResponseDto convertRequestToResponseDto(UserRequestDto userRequestDto);
 
-	public User convertToEntity(UserResponseDto dto) {
-		return modelMapper.map(dto, User.class);
-	}
-	
-	public UserResponseDto convertRequestToResponseDto(UserRequestDto userRequestDto) {
-        return modelMapper.map(userRequestDto, UserResponseDto.class);
-    }
-	
-	public User convertRequestToEntity(UserRequestDto userRequestDto) {
-        return modelMapper.map(userRequestDto, User.class);
-    }
+	User convertRequestToEntity(UserRequestDto userRequestDto);
 
-	public void updateEntityFromRequestDto(UserRequestDto userDto, User user) {
-		// TODO Auto-generated method stub
-		
-	}
-	
 }

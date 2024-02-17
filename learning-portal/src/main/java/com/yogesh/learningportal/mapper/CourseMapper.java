@@ -1,32 +1,33 @@
 
 package com.yogesh.learningportal.mapper;
 
-import org.modelmapper.ModelMapper;
-import org.springframework.stereotype.Component;
+import org.mapstruct.Mapper;
+import org.mapstruct.factory.Mappers;
 
 import com.yogesh.learningportal.dto.CourseRequestDto;
 import com.yogesh.learningportal.dto.CourseResponseDto;
 import com.yogesh.learningportal.entity.Course;
 
-@Component
-public class CourseMapper {
+@Mapper(componentModel = "spring")
+public interface CourseMapper {
 
-	private final ModelMapper modelMapper;
+	CourseMapper INSTANCE = Mappers.getMapper(CourseMapper.class);
 
-	public CourseMapper(ModelMapper modelMapper) {
-		this.modelMapper = modelMapper;
-	}
+	CourseRequestDto convertToDto(Course course);
 
-	public CourseRequestDto convertToDto(Course course) {
-		return modelMapper.map(course, CourseRequestDto.class);
-	}
+	Course convertToEntity(CourseRequestDto dto);
 
-	public Course convertToEntity(CourseRequestDto dto) {
-		return modelMapper.map(dto, Course.class);
-	}
-
-	public CourseResponseDto convertToResponseDto(Course course) {
-		return modelMapper.map(course, CourseResponseDto.class);
+	default CourseResponseDto convertToResponseDto(Course course) {
+		if (course == null) {
+			return null;
+		}
+		CourseResponseDto dto = new CourseResponseDto();
+		dto.setId(course.getId());
+		dto.setName(course.getName());
+		dto.setDesc(course.getDesc());
+		dto.setAuthorName(course.getAuthor().getName());
+		dto.setCategoryName(course.getCategory().getName());
+		return dto;
 	}
 
 }

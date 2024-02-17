@@ -1,34 +1,40 @@
 package com.yogesh.learningportal.service;
 
 import java.nio.charset.StandardCharsets;
-import java.security.SecureRandom;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 import org.slf4j.Logger;
-import org.springframework.stereotype.Service;
 import org.slf4j.LoggerFactory;
-import com.yogesh.learningportal.entity.Course;
-import com.yogesh.learningportal.entity.User;
-import com.yogesh.learningportal.repository.CourseRepository;
-import com.yogesh.learningportal.repository.UserRepository;
+import org.springframework.stereotype.Service;
 
 import com.google.common.hash.HashCode;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
 import com.google.common.primitives.Bytes;
+import com.yogesh.learningportal.dto.UserResponseDto;
+import com.yogesh.learningportal.entity.Course;
+import com.yogesh.learningportal.entity.User;
+import com.yogesh.learningportal.repository.CourseRepository;
+import com.yogesh.learningportal.repository.UserRepository;
 
-import lombok.AllArgsConstructor;
-
-@AllArgsConstructor
 @Service
 public class UserService {
+	private final CourseService courseService;
 
 	private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
-	
 	private final UserRepository userRepository;
 	private final CourseRepository courseRepository;
+
+	public UserService(CourseService courseService, UserRepository userRepository, CourseRepository courseRepository) {
+		this.courseService = courseService;
+		this.userRepository = userRepository;
+		this.courseRepository = courseRepository;
+	}
+
+	private static final byte[] FIXED_SALT = "YourFixedSaltHere".getBytes(StandardCharsets.UTF_8);
 
 	public List<User> getAllUsers() {
 		return userRepository.findAll();
@@ -39,18 +45,16 @@ public class UserService {
 	}
 
 	public User addUser(User user) {
-		byte[] salt = generateSalt();
-
 		String password = user.getPassword();
 
-		HashCode hash = hashPassword(password, salt);
+		HashCode hash = hashPassword(password);
 
 		String hashedPassword = hash.toString();
 		user.setPassword(hashedPassword);
 
 		return userRepository.save(user);
 	}
-	
+
 	public User findByName(String name) {
 		return userRepository.findByName(name);
 	}
@@ -59,16 +63,26 @@ public class UserService {
 		Optional<User> optionalUser = userRepository.findById(userId);
 		if (optionalUser.isPresent()) {
 			User user = optionalUser.get();
+			List<Course> tempCourses = courseRepository.getCoursesByAuthor(userId);
+
 			user.getEnrolledCourses().clear();
 			user.getFavoriteCourses().clear();
+			userRepository.save(user);
 
-			List<Course> courses = courseRepository.getCoursesByAuthor(userId);
-			// Delete fetched courses
-			courseRepository.deleteAll(courses);
+			for (Course it : tempCourses) {
+				List<UserResponseDto> unenrollUser = courseService.getEnrolledUsers(it.getId());
+
+				for (UserResponseDto userDetails : unenrollUser) {
+					removeEnrollment(userDetails.getId(), it.getId());
+					removeFavoriteCourse(userDetails.getId(), it.getId());
+				}
+				courseRepository.delete(it);
+			}
+
 			userRepository.delete(user);
 			logger.info("User with ID {} has successfully Removed", userId);
 		} else {
-			throw new IllegalArgumentException("User with ID " + userId + " not found.");
+			throw new IllegalArgumentException("User Not found: " + userId);
 		}
 	}
 
@@ -112,6 +126,7 @@ public class UserService {
 				user.getFavoriteCourses().add(course);
 				userRepository.save(user);
 			}
+			logger.info("User {} favourite course with {} has been successfully added", userId, courseId);
 		} else {
 			throw new IllegalArgumentException("User not found for ID: " + userId);
 		}
@@ -119,8 +134,13 @@ public class UserService {
 
 	public List<Course> getAllFavourite(Long userId) {
 		Optional<User> optionalUser = userRepository.findById(userId);
-		User user = optionalUser.get();
-		return user.getFavoriteCourses();
+		if (optionalUser.isPresent()) {
+			User user = optionalUser.get();
+			return user.getFavoriteCourses();
+		} else {
+			return Collections.emptyList();
+		}
+
 	}
 
 	public void removeEnrollment(Long userId, Long courseId) {
@@ -156,17 +176,19 @@ public class UserService {
 		}
 	}
 
-	private byte[] generateSalt() {
-		SecureRandom random = new SecureRandom();
-		byte[] salt = new byte[16];
-		random.nextBytes(salt);
-		return salt;
+	public Optional<User> login(String email, String password) {
+		User user = userRepository.findByEmail(email);
+		if (user != null) {
+			HashCode hashedPassword = hashPassword(password);
+			if (hashedPassword.toString().equals(user.getPassword())) {
+				return Optional.of(user);
+			}
+		}
+		return Optional.empty();
 	}
 
-	// Hash the password using SHA-256
-	private HashCode hashPassword(String password, byte[] salt) {
+	private HashCode hashPassword(String password) {
 		HashFunction hashFunction = Hashing.sha256();
-		byte[] concatenatedBytes = Bytes.concat(password.getBytes(StandardCharsets.UTF_8), salt);
-		return hashFunction.hashBytes(concatenatedBytes);
+		return hashFunction.hashBytes(Bytes.concat(password.getBytes(StandardCharsets.UTF_8), FIXED_SALT));
 	}
 }
