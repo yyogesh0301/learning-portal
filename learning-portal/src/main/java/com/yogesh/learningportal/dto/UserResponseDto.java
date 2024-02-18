@@ -4,9 +4,13 @@ import java.util.List;
 
 import com.yogesh.learningportal.entity.User.Roles;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class UserResponseDto {
 
 	private Long id;
@@ -15,19 +19,5 @@ public class UserResponseDto {
 	private Roles role;
 	private List<CourseResponseDto> enrolledCourses;
 	private List<CourseResponseDto> favoriteCourses;
-
-	public UserResponseDto(Long id, String name, String email, Roles role, List<CourseResponseDto> enrolledCourses,
-			List<CourseResponseDto> favoriteCourses) {
-		super();
-		this.id = id;
-		this.name = name;
-		this.email = email;
-		this.role = role;
-		this.enrolledCourses = enrolledCourses;
-		this.favoriteCourses = favoriteCourses;
-	}
-
-	public UserResponseDto() {
-	}
 
 }

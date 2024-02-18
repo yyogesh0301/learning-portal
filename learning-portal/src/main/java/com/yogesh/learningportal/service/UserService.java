@@ -1,40 +1,31 @@
 package com.yogesh.learningportal.service;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.google.common.hash.HashCode;
-import com.google.common.hash.HashFunction;
-import com.google.common.hash.Hashing;
-import com.google.common.primitives.Bytes;
 import com.yogesh.learningportal.dto.UserResponseDto;
 import com.yogesh.learningportal.entity.Course;
 import com.yogesh.learningportal.entity.User;
 import com.yogesh.learningportal.repository.CourseRepository;
 import com.yogesh.learningportal.repository.UserRepository;
 
+import lombok.AllArgsConstructor;
+
+@AllArgsConstructor
 @Service
 public class UserService {
 	private final CourseService courseService;
-
-	private static final Logger logger = LoggerFactory.getLogger(UserService.class);
-
 	private final UserRepository userRepository;
 	private final CourseRepository courseRepository;
+	private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
-	public UserService(CourseService courseService, UserRepository userRepository, CourseRepository courseRepository) {
-		this.courseService = courseService;
-		this.userRepository = userRepository;
-		this.courseRepository = courseRepository;
-	}
-
-	private static final byte[] FIXED_SALT = "YourFixedSaltHere".getBytes(StandardCharsets.UTF_8);
+	private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
 	public List<User> getAllUsers() {
 		return userRepository.findAll();
@@ -47,9 +38,9 @@ public class UserService {
 	public User addUser(User user) {
 		String password = user.getPassword();
 
-		HashCode hash = hashPassword(password);
+		// Hash the password with salt using BCrypt
+		String hashedPassword = bCryptPasswordEncoder.encode(password);
 
-		String hashedPassword = hash.toString();
 		user.setPassword(hashedPassword);
 
 		return userRepository.save(user);
@@ -178,17 +169,12 @@ public class UserService {
 
 	public Optional<User> login(String email, String password) {
 		User user = userRepository.findByEmail(email);
-		if (user != null) {
-			HashCode hashedPassword = hashPassword(password);
-			if (hashedPassword.toString().equals(user.getPassword())) {
-				return Optional.of(user);
-			}
+
+		if (user != null && bCryptPasswordEncoder.matches(password, user.getPassword())) {
+			return Optional.of(user);
 		}
+
 		return Optional.empty();
 	}
 
-	private HashCode hashPassword(String password) {
-		HashFunction hashFunction = Hashing.sha256();
-		return hashFunction.hashBytes(Bytes.concat(password.getBytes(StandardCharsets.UTF_8), FIXED_SALT));
-	}
 }

@@ -3,6 +3,8 @@ package com.yogesh.learningportal.controller;
 import java.util.List;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -33,6 +35,8 @@ public class UserController {
 	private final CourseService courseService;
 	private final UserMapper userMapper;
 
+	private static final Logger logger = LoggerFactory.getLogger(UserController.class);
+
 	@GetMapping
 	public ResponseEntity<List<UserResponseDto>> getAllUsers() {
 		List<User> users = userService.getAllUsers();
@@ -45,6 +49,7 @@ public class UserController {
 
 		User user = userService.addUser(userMapper.convertRequestToEntity(userDto));
 		UserResponseDto userResponseDto = userMapper.convertToDto(user);
+		logger.info("User Created successfully");
 		return ResponseEntity.status(HttpStatus.CREATED).body(userResponseDto);
 	}
 
@@ -63,6 +68,7 @@ public class UserController {
 				userService.deleteUser(id);
 				return ResponseEntity.ok("User and related data deleted successfully.");
 			} catch (Exception e) {
+				logger.info("User Not found");
 				return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 						.body("User Not Found Error Deleting" + e.getMessage());
 			}
@@ -95,6 +101,7 @@ public class UserController {
 				return ResponseEntity.badRequest().body("User is already enrolled in the course.");
 			}
 			userService.enrollCourse(userId, courseId);
+			logger.info("Enrolled Success");
 			return ResponseEntity.ok("Successfully enrolled in the course.");
 		} catch (Exception e) {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Could not enroll " + e.getMessage());
@@ -119,6 +126,7 @@ public class UserController {
 		Long courseId = requestDto.getCourseId();
 		try {
 			userService.removeEnrollment(userId, courseId);
+			logger.info("Enrollement Removed");
 			return ResponseEntity.ok("Enrollment removed successfully.");
 		} catch (Exception e) {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -130,6 +138,7 @@ public class UserController {
 	public ResponseEntity<String> removeFavoriteCourse(@RequestBody EnrollmentRequestDto requestDto) {
 		try {
 			userService.removeFavoriteCourse(requestDto.getUserId(), requestDto.getCourseId());
+			logger.info("Favourite Removed");
 			return ResponseEntity.ok("Favorite course removed successfully.");
 		} catch (Exception e) {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unable to enroll ");
@@ -143,6 +152,7 @@ public class UserController {
 
 		Optional<User> userT = userService.login(email, password);
 		if (userT.isPresent()) {
+			logger.info("login Success");
 			return ResponseEntity.ok("Login succesfull");
 		} else {
 			return ResponseEntity.ok("Login failed");

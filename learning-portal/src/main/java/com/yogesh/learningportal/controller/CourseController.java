@@ -25,24 +25,19 @@ import com.yogesh.learningportal.service.CategoryService;
 import com.yogesh.learningportal.service.CourseService;
 import com.yogesh.learningportal.service.UserService;
 
+import lombok.AllArgsConstructor;
+
+@AllArgsConstructor
 @RestController
 @RequestMapping("api/courses")
 public class CourseController {
 
-	private CourseService courseService;
-	private CategoryService categoryService;
-	private UserService userService;
-	private CourseMapper courseMapper;
+	private final CourseService courseService;
+	private final CategoryService categoryService;
+	private final UserService userService;
+	private final CourseMapper courseMapper;
 
 	private static final Logger logger = LoggerFactory.getLogger(CourseController.class);
-
-	public CourseController(CourseService courseService, CategoryService categoryService, UserService userService,
-			CourseMapper courseMapper) {
-		this.courseService = courseService;
-		this.categoryService = categoryService;
-		this.userService = userService;
-		this.courseMapper = courseMapper;
-	}
 
 	@GetMapping
 	public List<CourseResponseDto> getAllCourses() {

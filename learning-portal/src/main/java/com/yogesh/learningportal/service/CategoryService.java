@@ -8,14 +8,13 @@ import org.springframework.stereotype.Service;
 import com.yogesh.learningportal.entity.Category;
 import com.yogesh.learningportal.repository.CategoryRepository;
 
+import lombok.AllArgsConstructor;
+
+@AllArgsConstructor
 @Service
 public class CategoryService {
 
 	private final CategoryRepository categoryRepository;
-
-	public CategoryService(CategoryRepository categoryRepository) {
-		this.categoryRepository = categoryRepository;
-	}
 
 	public List<Category> findAllCategories() {
 		return categoryRepository.findAll();
